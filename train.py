@@ -23,8 +23,8 @@ batch_size = args.batch_size
 #train, valそれぞれに
 #pathのリストとそれに対応するfrom 0 to n_classesの正解ラベルを用意。
 #############################################################
-train_paths, train_labels = make_path_and_class_tuple_list(path=path, mode='train')
-valid_paths, valid_labels = make_path_and_class_tuple_list(path=path, mode='validation')
+train_paths, train_labels = make_path_and_class_tuple_list(n_classes=num_classes, path=path, mode='train')
+valid_paths, valid_labels = make_path_and_class_tuple_list(n_classes=num_classes, path=path, mode='validation')
 
 print('------------')
 print(train_paths)
@@ -38,8 +38,8 @@ print(valid_labels)
 ##########################
 #kearas.utils.dataloaderにそれを渡す。
 ##########################
-train_gen = ImageSequence(train_pairs, num_classes, batch_size)
-valid_gen = ImageSequence(valid_pairs, num_classes, batch_size)
+train_gen = ImageSequence(train_paths, train_labels, num_classes, batch_size)
+valid_gen = ImageSequence(valid_paths, valid_labels, num_classes, batch_size)
 
 #########################
 #modelを定義する。

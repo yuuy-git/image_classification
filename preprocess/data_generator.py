@@ -39,11 +39,9 @@ on_epoch_endがないとデータセットがランダムにオーギュメン�
 '''
 
 class ImageSequence(Sequence):
-    def __init__(self, pairs, num_classes, root='.', batch_size=1):
-        self.x = [str(x) for x in pairs[0]]
-
-
-        self.y = np_utils.to_categorical(x for pairs[1], num_classes)
+    def __init__(self, x_set, y_set, num_classes, root='.', batch_size=1):
+        self.x = x_set
+        self.y = y_set
         self.batch_size = batch_size
 
     def __getitem__(self, idx):

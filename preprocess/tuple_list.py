@@ -1,5 +1,8 @@
 from pathlib import Path
 import json
+from keras.utils import np_utils
+import numpy as np
+
 
 def read_json(path):
     f = open(path, 'r')
