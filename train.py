@@ -3,7 +3,8 @@ from pathlib import Path
 from preprocess.tuple_list import make_path_and_class_tuple_list
 from preprocess.data_generator import ImageSequence
 from model.vgg16 import vgg16
-
+from keras import losses
+from keras import optimizers
 
 
 parser = argparse.ArgumentParser()
@@ -16,6 +17,7 @@ parser.add_argument('--weights','--w',type=str,default='imagenet',
                     help='if use trained weights, set imagenet. if not use trained weight, set NONE')
 parser.add_argument('--config', '--c', type=str, default='default',
                     help = 'default or  manual, if manual, u can choose what layer is fixed')
+parser.add_argument('--optimizers', '--o', type=str, default='sgd', help='sgd or Adam u can customize more')
 
 #parser.add_argument('--data_aug')
 args = parser.parse_args()
@@ -78,13 +80,44 @@ elif args.config == 'manual':
     for layer in base_model.layers[l:]:
         layer.trainable=True
 
+#model compile
+#optimizers
+#その他にも設定可能　https://keras.io/ja/optimizers/
+if args.optimizer == 'sgd':
+    optimizer = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=False)
+elif args.optimizer == 'Adam':
+    optimizer =optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
 
 
+
+
+if args.num_classes == 1:
+    model.compile(optimizer,
+                  loss=losses.binary_crossentropy,
+                  metrics=['accuracy'])
+else:
+    model.compile(optimizer,
+                  loss=losses.categorical_crossentropy,
+                  metrics=['accuracy'])
 
 
 ####################
 #fit_generatorを用いてトレインする。
 #####################
+
+model.fit_generator(generator=train_gen,
+                    steps_per_epoch=None,#Sequenceの方で定義
+                    epochs=1,
+                    verbose=2,
+                    callbacks=None,#後で設定
+                    validation_data=valid_gen,
+                    validation_steps=None,#Sequenceの方で定義
+                    class_weight=None,#過小評価されたクラスのサンプルに「より注意を向ける」場合に有用です．
+                    max_queue_size=10,
+                    workers=1,
+                    use_multiprocessing=False,
+                    shuffle=True,
+                    initial_epoch=0)#前回の学習を再開するのに便利です
 
 
 '''
