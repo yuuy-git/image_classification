@@ -1,7 +1,7 @@
 from pathlib import Path
 import math
-
 from skimage.io import imread
+from PIL import Image
 from keras.utils import Sequence
 from keras.utils import np_utils
 import numpy as np
@@ -36,6 +36,8 @@ on_epoch_endがないとデータセットがランダムにオーギュメン�
 それに対する仮説
 オーギュメンテーションをその設定のまま行うのであれば、よくて、ランダム変数とかを変えたいならこれがいる？
 画像を変更する時もこれがいる
+
+__getitem__ の返り値はバッチの画像の配列とバッチの正解ラベル配列
 '''
 
 class ImageSequence(Sequence):
@@ -50,8 +52,15 @@ class ImageSequence(Sequence):
         batch_y = self.y[idx * self.batch_size:(idx + 1) * self.batch_size]
 
         # 画像を1枚づつ読み込んで、前処理をする
-        batch_x = np.array([self.preprocess(imread(file_name)) for file_name in batch_x])
-        return batch_x, np.array(batch_y)
+        b_x = []
+        for file_name in batch_x:
+            img = Image.open(file_name)
+            imgdata = np.array(img)
+            img.close()
+            b_x.append(imgdata)
+#        batch_x = np.array([self.preprocess(imread(file_name)) for file_name in batch_x])
+
+        return np.array(b_x), np.array(batch_y)
 
     def __len__(self):
         return math.ceil(len(self.x) / self.batch_size)

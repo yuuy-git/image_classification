@@ -2,7 +2,9 @@ import argparse
 from pathlib import Path
 from preprocess.tuple_list import make_path_and_class_tuple_list
 from preprocess.data_generator import ImageSequence
-
+from model.vgg16 import vgg16
+from keras import losses
+from keras import optimizers
 
 
 parser = argparse.ArgumentParser()
@@ -11,12 +13,18 @@ parser.add_argument('model', type=str, help='choose model vgg16, vgg19, rensnet5
 parser.add_argument('--data_path', type=str, default='./data/')
 parser.add_argument('--file_type','--k',type=str,default='.jpg', help='.jpg, .png')
 parser.add_argument('--batch_size','--b',type=int,default='16', help='batch_size')
+parser.add_argument('--weights','--w',type=str,default='imagenet',
+                    help='if use trained weights, set imagenet. if not use trained weight, set NONE')
+parser.add_argument('--config', '--c', type=str, default='default',
+                    help = 'default or  manual, if manual, u can choose what layer is fixed')
+parser.add_argument('--optimizers', '--o', type=str, default='sgd', help='sgd or Adam u can customize more')
 
 #parser.add_argument('--data_aug')
 args = parser.parse_args()
 path = args.data_path
 num_classes = args.num_classes
 batch_size = args.batch_size
+weights = args.weights
 
 #############################################################
 #データを使えるように整える
@@ -41,17 +49,75 @@ print(valid_labels)
 train_gen = ImageSequence(train_paths, train_labels, num_classes, batch_size)
 valid_gen = ImageSequence(valid_paths, valid_labels, num_classes, batch_size)
 
+print(train_gen)
+print(valid_gen)
 #########################
 #modelを定義する。
-#loss関数などを定義する
 #重みを引き継ぐかを定義する　→　vgg16.pyの方かも
 #重みを引くつぐのなら、どこの重みを固定するかを指定する
+
+#loss関数などを定義する
+
 ########################
+if args.model == 'vgg16':
+    if args.weights == 'imagenet':
+        model = vgg16(num_classes, weights=weights)
+    elif args.weights == 'NONE':
+        model = vgg16(num_classes, weights=None)
+
+print(model.summary())
+
+
+
+#fix weights before VGG16 14layers
+if args.config == 'default':
+    for layer in base_model.layers:
+        layer.trainable=False
+elif args.config == 'manual':
+    l = input("何番目の層まで固定しますか。int型。＋１して入れてね。")
+    for layer in base_model.layers[:l]:
+        layer.trainable=False
+    for layer in base_model.layers[l:]:
+        layer.trainable=True
+
+#model compile
+#optimizers
+#その他にも設定可能　https://keras.io/ja/optimizers/
+if args.optimizer == 'sgd':
+    optimizer = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=False)
+elif args.optimizer == 'Adam':
+    optimizer =optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+
+
+
+
+if args.num_classes == 1:
+    model.compile(optimizer,
+                  loss=losses.binary_crossentropy,
+                  metrics=['accuracy'])
+else:
+    model.compile(optimizer,
+                  loss=losses.categorical_crossentropy,
+                  metrics=['accuracy'])
 
 
 ####################
-#
+#fit_generatorを用いてトレインする。
 #####################
+
+model.fit_generator(generator=train_gen,
+                    steps_per_epoch=None,#Sequenceの方で定義
+                    epochs=1,
+                    verbose=2,
+                    callbacks=None,#後で設定
+                    validation_data=valid_gen,
+                    validation_steps=None,#Sequenceの方で定義
+                    class_weight=None,#過小評価されたクラスのサンプルに「より注意を向ける」場合に有用です．
+                    max_queue_size=10,
+                    workers=1,
+                    use_multiprocessing=False,
+                    shuffle=True,
+                    initial_epoch=0)#前回の学習を再開するのに便利です
 
 
 '''
