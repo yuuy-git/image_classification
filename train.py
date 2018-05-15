@@ -3,6 +3,8 @@ from pathlib import Path
 from preprocess.tuple_list import make_path_and_class_tuple_list
 from preprocess.data_generator import ImageSequence
 from model.vgg16 import vgg16
+from utils.callback import cb
+from utils.plot import plot_history
 from keras import losses
 from keras import optimizers
 
@@ -17,7 +19,7 @@ parser.add_argument('--weights','--w',type=str,default='imagenet',
                     help='if use trained weights, set imagenet. if not use trained weight, set NONE')
 parser.add_argument('--config', '--c', type=str, default='default',
                     help = 'default or  manual, if manual, u can choose what layer is fixed')
-parser.add_argument('--optimizers', '--o', type=str, default='sgd', help='sgd or Adam u can customize more')
+parser.add_argument('--optimizer', '--o', type=str, default='sgd', help='sgd or Adam u can customize more')
 
 #parser.add_argument('--data_aug')
 args = parser.parse_args()
@@ -61,9 +63,9 @@ print(valid_gen)
 ########################
 if args.model == 'vgg16':
     if args.weights == 'imagenet':
-        model = vgg16(num_classes, weights=weights)
+        model, base_model = vgg16(num_classes, weights=weights)
     elif args.weights == 'NONE':
-        model = vgg16(num_classes, weights=None)
+        model, base_model = vgg16(num_classes, weights=None)
 
 print(model.summary())
 
@@ -105,11 +107,14 @@ else:
 #fit_generatorを用いてトレインする。
 #####################
 
+cb, history = cb()
+
+
 model.fit_generator(generator=train_gen,
                     steps_per_epoch=None,#Sequenceの方で定義
-                    epochs=1,
-                    verbose=2,
-                    callbacks=None,#後で設定
+                    epochs=2, #後で引数に追加する。
+                    verbose=1,
+                    callbacks=cb,#後で設定
                     validation_data=valid_gen,
                     validation_steps=None,#Sequenceの方で定義
                     class_weight=None,#過小評価されたクラスのサンプルに「より注意を向ける」場合に有用です．
@@ -118,6 +123,11 @@ model.fit_generator(generator=train_gen,
                     use_multiprocessing=False,
                     shuffle=True,
                     initial_epoch=0)#前回の学習を再開するのに便利です
+
+
+#plot_history(history)
+
+
 
 
 '''
