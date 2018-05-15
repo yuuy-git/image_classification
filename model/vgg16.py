@@ -12,11 +12,11 @@ def vgg16(n_classes, weights='imagenet'):
     #x = Dense(1024, activation='relu')(x) #1024説もある。
     x = Dense(512, activation='relu')(x)
 
-    if n_classes == 2:
+    if n_classes == 1:
         out = Dense(1, activation='sigmoid')(x)
     else:
         out = Dense(n_classes, activation='softmax')(x)
 
     model = Model(inputs=base_model.input, outputs=out)
 
-    return model
+    return model, base_model
