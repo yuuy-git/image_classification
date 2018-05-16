@@ -3,6 +3,8 @@ from pathlib import Path
 from preprocess.tuple_list import make_path_and_class_tuple_list
 from preprocess.data_generator import ImageSequence
 from model.vgg16 import vgg16
+from model.vgg19 import vgg19
+from model.xception import xception
 from utils.callback import cb
 from utils.plot import plot_history
 from keras import losses
@@ -66,6 +68,20 @@ if args.model == 'vgg16':
         model, base_model = vgg16(num_classes, weights=weights)
     elif args.weights == 'NONE':
         model, base_model = vgg16(num_classes, weights=None)
+
+if args.model == 'vgg19':
+    if args.weights == 'imagenet':
+        model, base_model = vgg19(num_classes, weights=weights)
+    elif args.weights == 'NONE':
+        model, base_model = vgg19(num_classes, weights=None)
+
+if args.model == 'xception':
+    if args.weights == 'imagenet':
+        model, base_model = xception(num_classes, weights=weights)
+    elif args.weights == 'NONE':
+        model, base_model = xception(num_classes, weights=None)
+
+
 
 print(model.summary())
 
