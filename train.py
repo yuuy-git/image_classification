@@ -4,6 +4,7 @@ from preprocess.tuple_list import make_path_and_class_tuple_list
 from preprocess.data_generator import ImageSequence
 from model.vgg16 import vgg16
 from model.vgg19 import vgg19
+from model.inceptionv3 import inceptionv3
 from model.xception import xception
 from utils.callback import cb
 from utils.plot import plot_history
@@ -17,19 +18,19 @@ parser.add_argument('model', type=str, help='choose model vgg16, vgg19, rensnet5
 parser.add_argument('--data_path', type=str, default='./data/')
 parser.add_argument('--file_type','--k',type=str,default='.jpg', help='.jpg, .png')
 parser.add_argument('--batch_size','--b',type=int,default='16', help='batch_size')
-parser.add_argument('--weights','--w',type=str,default='imagenet',
-                    help='if use trained weights, set imagenet. if not use trained weight, set NONE')
+parser.add_argument('--pretrained','--p',type=bool,default=True,
+                    help='if use pretrained weights, set True. if not use pretrained weight, set False')
 parser.add_argument('--config', '--c', type=str, default='default',
                     help = 'default or  manual, if manual, u can choose what layer is fixed')
 parser.add_argument('--optimizer', '--o', type=str, default='sgd', help='sgd or Adam u can customize more')
+
 
 #parser.add_argument('--data_aug')
 args = parser.parse_args()
 path = args.data_path
 num_classes = args.num_classes
 batch_size = args.batch_size
-weights = args.weights
-
+print(args.pretrained)
 #############################################################
 #データを使えるように整える
 #train, valそれぞれに
@@ -63,23 +64,31 @@ print(valid_gen)
 #loss関数などを定義する
 
 ########################
+
+
 if args.model == 'vgg16':
-    if args.weights == 'imagenet':
-        model, base_model = vgg16(num_classes, weights=weights)
-    elif args.weights == 'NONE':
+    if args.pretrained == True:
+        model, base_model = vgg16(num_classes, weights='imagenet')
+    elif args.pretrained == False:
         model, base_model = vgg16(num_classes, weights=None)
 
 if args.model == 'vgg19':
-    if args.weights == 'imagenet':
-        model, base_model = vgg19(num_classes, weights=weights)
-    elif args.weights == 'NONE':
+    if args.pretrained == True:
+        model, base_model = vgg19(num_classes, weights='imagenet')
+    elif args.pretrained == False:
         model, base_model = vgg19(num_classes, weights=None)
 
 if args.model == 'xception':
-    if args.weights == 'imagenet':
-        model, base_model = xception(num_classes, weights=weights)
-    elif args.weights == 'NONE':
+    if args.pretrained == True:
+        model, base_model = xception(num_classes, weights='imagenet')
+    elif args.pretrained == False:
         model, base_model = xception(num_classes, weights=None)
+
+if args.model == 'inceptionv3':
+    if args.pretrained == True:
+        model, base_model = inceptionv3(num_classes, weights='imagenet')
+    elif args.pretrained == False:
+        model, base_model = inceptionv3(num_classes, weights=None)
 
 
 
