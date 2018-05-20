@@ -76,8 +76,8 @@ class ImageSequence(Sequence):
 '''
 How to USE
 
-train_gen = ImageSequence(train_pairs, num_classes, batchsize)
-valid_gen = ImageSequence(valid_pairs, num_classes, batchsize)
+train_gen = ImageSequence(x_set, y_set, num_classes, batchsize)
+valid_gen = ImageSequence(x_set, y_set, num_classes, batchsize)
 model.fit_generator(
     generator=train_gen,
     epochs=epoch,
