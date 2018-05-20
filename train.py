@@ -18,7 +18,7 @@ parser.add_argument('model', type=str, help='choose model vgg16, vgg19, rensnet5
 parser.add_argument('--data_path', type=str, default='./data/')
 parser.add_argument('--file_type','--k',type=str,default='.jpg', help='.jpg, .png')
 parser.add_argument('--batch_size','--b',type=int,default='16', help='batch_size')
-parser.add_argument('--pretrained','--p',type=bool,default=True,
+parser.add_argument('--pretrained','--p',action='store_true',
                     help='if use pretrained weights, set True. if not use pretrained weight, set False')
 parser.add_argument('--config', '--c', type=str, default='default',
                     help = 'default or  manual, if manual, u can choose what layer is fixed')
